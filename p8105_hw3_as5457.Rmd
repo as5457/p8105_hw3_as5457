@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 )
 
 #Ensuring that the background of the graphs are bw and legend is printed at the bottom. 
-theme_set(theme_bw() + theme(legend.position = "bottom"))
+theme_set(theme_bw() + theme(legend.position = "right"))
 ```
 
 ------------------------------------------------------------------------------------------------
@@ -146,25 +146,30 @@ filteredyear %>%
 
 - For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time.
 
-First converting year into a factor variable
-
 ```{r}
+#First I am converting the year variable from "integer" to "Factor" to be able to make my boxplot show each year.
 brfss_smart$year=as.factor(brfss_smart$year)
 ```
 
 
 ```{r}
 brfss_smart %>% 
+  
+#Grouping by the response, locationabbr, year variables
   group_by (response, locationabbr, year) %>% 
+  
+#Calculating the mean for each response value.
   summarize(avg_prop = mean (data_value)) %>% 
+  
+#Setting up boxplot using ggplot.
   ggplot(aes(x = year, y = avg_prop)) + 
   geom_boxplot(alpha = .5) +
   facet_grid(. ~ response) +
   labs (
-    title = "Distribution of state-level averages over time",
-        x = "year",
-        y = "average proportion"
-  )
+    title = "Distribution of State-Level Averages Over Time",
+        x = "Year",
+        y = "Average Proportion"
+  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 
@@ -184,39 +189,33 @@ insta = instacart %>%
 janitor::clean_names(dat = .)
 ```
 
-
-
 The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations.
 
+The instacart dataset provides information regarding each individual order that was placed and the products that were ordered. Additionally, it contains information regarding where in the supermarket (aisle) the ordered products can be found. The dataset size is `r dim_desc(insta)` with rows containing repeated informmation regarding each order and columns showing important variables such as the Order ID, Product Name, Time of the Order, Location and Department of the Order etc. There are `r nrow(distinct(insta, user_id))` distinct customers who collectively ordered `r nrow(distinct(insta, product_id))` orders.
 
 
-Then, do or answer the following (commenting on the results of each):
 
-** How many aisles are there, and which aisles are the most items ordered from? **
-There are 134 aisles.
+**How many aisles are there, and which aisles are the most items ordered from?**
+
+*There are 134 aisles.*
 
 ```{r}
 unique_aisle = unique(insta$aisle_id)
 length(unique_aisle)
 ```
 
+*The aisles with the most items ordered are: fresh vegetables, fresh fruits, packaged vegetables & fruits, yogurt and packaged cheese.*
 ```{r}
-items_ordered = insta %>%
+insta %>%
   group_by(aisle) %>% 
   summarize(item_count = n()) %>% 
-  mutate(item_count = desc(item_count))
-
-items_sorted = items_ordered %>% 
-  sort(item_count, decreas)
-  
-  
-
-  mutate(order(item_count, decreasing = TRUE))
-sort(items_ordered$item_count, decreasing = FALSE)
+  arrange(desc(item_count))
 ```
 
 
 Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
+
+
 
 Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
 
