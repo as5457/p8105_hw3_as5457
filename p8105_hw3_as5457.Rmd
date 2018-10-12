@@ -228,8 +228,16 @@ insta %>%
   ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
+Make a table showing the most popular item in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
 
+```{r}
+insta %>% 
+  group_by(aisle, product_name) %>% 
+  summarize (item_counts = n()) %>% 
+  mutate(rank = min_rank(desc(item_counts))) %>% 
+  filter (rank == 1) %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits"))
+```
 
 Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 
