@@ -47,16 +47,16 @@ brfss_smart = brfss_smart2010 %>%
 janitor::clean_names(dat = .) %>% 
   
 #Keeping only rows where the topic was "Overall Health"
-  filter(topic == "Overall Health")
+  filter(topic == "Overall Health") %>% 
+  
+#Including only responses from "Excellent" to "Poor"
+  filter(response %in% c("Excellent", "Very good", "Good", "Fair", "Poor")) %>% 
   
 #Organizing responses as a factor taking levels from "Excellent" to "Poor"
-
-brfss_smart$response = as.factor(brfss_smart$response)
-class(brfss_smart$response)
-brfss_smart %>%
   mutate(response = forcats::fct_reorder(response, display_order))
-class(brfss_smart$response)
 
+#Checking if conversion of the response variable from character to factor worked
+class(brfss_smart$response)
 ```
 
 
@@ -64,14 +64,22 @@ class(brfss_smart$response)
 
 - In 2002, which states were observed at 7 locations?
 
-The states that were observed at 7 locations were CT, FL, NC. 
+*The states that were observed at 7 locations were CT, FL, NC.*
 
 ```{r}
 brfss_smart %>%
+  
+#Filtering to only keep data for 2002
   filter(year == 2002) %>% 
+  
+#Separating locationdesc to be able to count distinct state and county
   separate(locationdesc, into = c("state", "county"), sep = " - ") %>% 
   distinct(state, county) %>% 
+  
+#Counting number of states represented
   count(state) %>% 
+  
+#Filtering states that were observed 7 times
   filter (n == 7)
 ```
 
@@ -79,16 +87,26 @@ brfss_smart %>%
 - Make a “spaghetti plot” that shows the number of observations in each state from 2002 to 2010.
 
 ```{r}
+#Making spaghetting plot called "Spaghetti"
 spaghetti = brfss_smart %>% 
+  
+#Grouping by the year and state abbreviation variables.
   group_by (year, locationabbr) %>% 
+  
+#Counting the number of times the state variable is observed
   summarize (n = n()) %>% 
+  
+#Setting up ggplot to show the spaghetti plot with points and lines connected.
   ggplot(aes(x = year, y = n, color = locationabbr)) +
+  geom_point() +
   geom_line() + 
   labs (
     title = "Number of Observations in Each State by Year",
         x = "year",
         y = "number of observations"
   )
+
+#Viewing the spaghetti plot
 spaghetti
 ```
 
@@ -98,18 +116,30 @@ spaghetti
 
 ```{r}
 
+#Filtering to only keep data for the years 2002, 2006 and 2010
 year02 = brfss_smart %>% 
   filter (year == 2002)
 year06 = brfss_smart %>%
   filter (year == 2006)
 year10 = brfss_smart %>% 
   filter (year == 2010)
+
+#Combining the year-filtered datasets into one dataset
 filteredyear = bind_rows(year02, year06, year10)
 
+#Continuing to filter variables
 filteredyear %>% 
+  
+#Filtering data for NY
   filter(locationabbr == "NY") %>% 
+  
+#Filtering data for those who responded "Excellent"
   filter(response == "Excellent") %>% 
+  
+#Grouping by year variable
   group_by(year) %>% 
+  
+#Calculating mean and standard deviation
   summarize(mean_prop = mean(data_value),
             std_prop = sd(data_value))
 ```
