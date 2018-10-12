@@ -250,7 +250,24 @@ insta %>%
   knitr::kable()
 ```
 
+#Problem 3
 
+This problem uses the NY NOAA data. DO NOT include this dataset in your local data directory; instead, load the data from the  p8105.datasets package (it’s called ny_noaa).
+
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+weather = ny_noaa %>% 
+  janitor::clean_names(dat = .)
+```
+
+**The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue.**
+
+The NY NOAA dataset provides information regarding the weather and precipitation pattern from `r min(weather$date)` to `r max(weather$date)`. The size of the dataset is `r dim_desc(weather)` and data are structured with columns providing information on precipitation (rain/snow) and daily temperatures (tmin/tmax). These key variables allow us to analyze the weather patterns in NY over the past decade. There are `r sum(is.na(weather$prcp))` missing values for the precipitation colummn and `r sum(is.na(weather$tmax))` missing alues for tmax and `r sum(is.na(weather$tmin))` missing values for tmin. Since a large extent of the data are missing, this might be an issue in the analysis of this dataset. 
+
+```{r}
+class(weather$date)
+```
 
 
 
