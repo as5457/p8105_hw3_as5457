@@ -215,7 +215,18 @@ insta %>%
 
 Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
 
-
+```{r}
+insta %>%
+  group_by(aisle, department) %>% 
+  summarize(item_count = n()) %>% 
+  ggplot(aes(x = aisle, y = item_count, color = department)) + 
+  geom_point(aes(size = item_count), alpha = 1) +
+  labs (
+    title = "Number Of Items Ordered In Each Aisle",
+        x = "Aisle Name",
+        y = "Number Of Items Ordered"
+  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
 
 Make a table showing the most popular item aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
 
