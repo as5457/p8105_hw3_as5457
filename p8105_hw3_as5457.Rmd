@@ -261,13 +261,46 @@ weather = ny_noaa %>%
   janitor::clean_names(dat = .)
 ```
 
-**The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue.**
+*The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue.*
 
-The NY NOAA dataset provides information regarding the weather and precipitation pattern from `r min(weather$date)` to `r max(weather$date)`. The size of the dataset is `r dim_desc(weather)` and data are structured with columns providing information on precipitation (rain/snow) and daily temperatures (tmin/tmax). These key variables allow us to analyze the weather patterns in NY over the past decade. There are `r sum(is.na(weather$prcp))` missing values for the precipitation colummn and `r sum(is.na(weather$tmax))` missing alues for tmax and `r sum(is.na(weather$tmin))` missing values for tmin. Since a large extent of the data are missing, this might be an issue in the analysis of this dataset. 
+The NY NOAA dataset provides information regarding the weather and precipitation pattern from `r min(weather$date)` to `r max(weather$date)`. The size of the dataset is `r dim_desc(weather)` and data are structured with columns providing information on precipitation (rain/snow) and daily temperatures (tmin/tmax). These key variables allow us to analyze the weather patterns in NY over the past decade. There are `r sum(is.na(weather$prcp))` missing values for the precipitation colummn and `r sum(is.na(weather$tmax))` missing values for tmax and `r sum(is.na(weather$tmin))` missing values for tmin. Since a large extent of the data are missing, this might be an issue in the analysis of this dataset because we would only be able to restrict our analysis to the specific stations for which data are available. 
+
+*Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.*
 
 ```{r}
-class(weather$date)
+ny_weather <- weather %>% 
+  separate(date, into = c("year", "month", "day"), sep = "-") %>%
+  mutate(prcp = prcp / 10) %>% 
+  mutate(tmax = as.numeric(tmax) / 10) %>% 
+  mutate(tmin = as.numeric(tmin)/10)
 ```
 
+*For snowfall, what are the most commonly observed values? Why?*
+
+The most common values observed for snowfall are 0 and null. This is because most days of the year it does not snow and many stations do not collect information on snow. 
+```{r}
+ny_weather %>% 
+  count(snow) %>% 
+  arrange(desc(n))
+```
+
+*Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?*
+
+Observing the collection of box plots below, we can see that in general, the average tmax in January is significantly lower in January than in July (as expected). The median of the mean tmax in January mostly falls beetween -5C and +5C whereas in July the values approximately range between 25C and 30C. There are many outliers in the January plot on both ends of the boxplots. In the July plot, however, the outliers are all in the lower tail of the boxplots, meaning that in July tmax can be low for some stations compared to what is expected.
+
+```{r}
+ny_weather %>% 
+  filter (month %in% c("01", "07")) %>%
+  group_by(month, id, year) %>% 
+  summarize(average_tmax = mean(tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = year, y = average_tmax)) +
+  geom_boxplot() +
+  facet_grid(~month) +
+    labs (
+    title = "Average Maximum Temperature In January and July",
+        x = "Year",
+        y = "Average Maximum Temperature (C)"
+  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
 
 
