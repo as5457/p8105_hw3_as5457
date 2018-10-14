@@ -201,6 +201,7 @@ The instacart dataset provides information regarding each individual order that 
 *There are 134 aisles.*
 
 ```{r}
+#Counting the number of unique aisles using the unique and length function.
 unique_aisle = unique(insta$aisle_id)
 length(unique_aisle)
 ```
@@ -208,8 +209,14 @@ length(unique_aisle)
 *The aisles with the most items ordered are: fresh vegetables, fresh fruits, packaged vegetables & fruits, yogurt and packaged cheese.*
 ```{r}
 insta %>%
+
+#Collapsing the aisle variable
   group_by(aisle) %>% 
+  
+#Counting the number of items by each aisle.
   summarize(item_count = n()) %>% 
+  
+#Arranging the output in descending order to find the most items ordered.
   arrange(desc(item_count))
 ```
 
@@ -218,25 +225,41 @@ Make a plot that shows the number of items ordered in each aisle. Order aisles s
 
 ```{r}
 insta %>%
+  
+#Collapsing by the aisle and department variables
   group_by(aisle, department) %>% 
+  
+#Counting the number of items by aisle and department.
   summarize(item_count = n()) %>% 
+  
+#Creating a scatterplot
   ggplot(aes(x = aisle, y = item_count, color = department)) + 
   geom_point(aes(size = item_count), alpha = 1) +
   labs (
     title = "Number Of Items Ordered In Each Aisle",
         x = "Aisle Name",
         y = "Number Of Items Ordered"
-  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "bottom")
 ```
 
 Make a table showing the most popular item in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
 
 ```{r}
 insta %>% 
+  
+#Grouping by the aisle and product name variables.
   group_by(aisle, product_name) %>% 
+  
+#Counting the number of items by aisle and product name. 
   summarize (item_counts = n()) %>% 
+  
+#Creating ranks in descending orders from most popular to least popular.
   mutate(rank = min_rank(desc(item_counts))) %>% 
+  
+#Keeping only the most popular item. 
   filter (rank == 1) %>% 
+  
+#Keeping on the three specified aisles. 
   filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits"))
 ```
 
@@ -244,10 +267,20 @@ Make a table showing the mean hour of the day at which Pink Lady Apples and Coff
 
 ```{r}
 insta %>% 
+  
+#Grouping by the product name and the day of the week when the product was ordered. 
   group_by(product_name, order_dow) %>% 
+  
+#Calculating the mean hour of the day at which the order was placed. 
   summarize(mean_hour_day = mean(order_hour_of_day)) %>% 
+  
+#Keeping only the two specified items. 
   filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  
+#Spreading the table.
   spread(key = "order_dow", value = "mean_hour_day") %>% 
+  
+#Formatting the output as a table.
   knitr::kable()
 ```
 
@@ -256,6 +289,8 @@ insta %>%
 This problem uses the NY NOAA data. DO NOT include this dataset in your local data directory; instead, load the data from the  p8105.datasets package (it’s called ny_noaa).
 
 ```{r}
+
+#Loadin the NY NOAA dataset from the p8105.datasets package and calling it "weather". 
 library(p8105.datasets)
 data("ny_noaa")
 weather = ny_noaa %>% 
@@ -269,9 +304,17 @@ The NY NOAA dataset provides information regarding the weather and precipitation
 *Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.*
 
 ```{r}
+
+#Creating a new clean dataset called ny_weather
 ny_weather <- weather %>% 
+  
+#Creating varaibles year, month and day using the date variable. 
   separate(date, into = c("year", "month", "day"), sep = "-") %>%
+  
+#Precipitation was reported as tenth of mm, therefore dividing it by 10. 
   mutate(prcp = prcp / 10) %>% 
+  
+#tmax and tmi=n were reported as tenth of degree, therefore dividing them by 10. 
   mutate(tmax = as.numeric(tmax) / 10) %>% 
   mutate(tmin = as.numeric(tmin)/10)
 ```
@@ -281,6 +324,8 @@ ny_weather <- weather %>%
 The most common values observed for snowfall are 0 and null. This is because most days of the year it does not snow and many stations do not collect information on snow. 
 ```{r}
 ny_weather %>% 
+
+#Counting the number of snow days and arranging in descending order. 
   count(snow) %>% 
   arrange(desc(n))
 ```
@@ -291,9 +336,17 @@ Observing the collection of box plots below, we can see that in general, the ave
 
 ```{r}
 ny_weather %>% 
+  
+#Keeping records only the months of January and July. 
   filter (month %in% c("01", "07")) %>%
+  
+#Grouping by month, station ID and year. 
   group_by(month, id, year) %>% 
+  
+#Calculating the mean of tmax by month, station ID and year. 
   summarize(average_tmax = mean(tmax, na.rm = TRUE)) %>% 
+  
+#Creting boxplot to show avereage tmax in January and July by year. 
   ggplot(aes(x = year, y = average_tmax)) +
   geom_boxplot() +
   facet_grid(~month) +
@@ -309,22 +362,31 @@ ny_weather %>%
 #tmax vs tmin for full dataset
 
 ```{r}
+
+#Creating a hexagonal plot called "hex" which shows the tmax vs tmin for the full dataset. 
 hex = ny_weather %>% 
   ggplot(aes(x = tmax, y = tmin)) +
   geom_hex() +
   labs(
-    title = "New York Hexagon Plot of Maximum Temperature vs. Minimum Temperature",
+    title = "Tmax/Tmin Hexagon Plot",
     x = "Maximum Temperature",
     y = "Minimum Temperature"
-  )
+  ) + theme (legend.position = "bottom")
 
+#Creating a ridge plot that shows the distribution of snowfall values separated by year. 
 snowfall = ny_weather %>% 
   filter(snow > 0 & snow < 100) %>% 
   ggplot(aes(x = snow, y = year)) + 
-  geom_density_ridges(scale = .85)
+  geom_density_ridges(scale = .85) +
+  labs(
+    title = "Snowfall Distribution",
+    x = "Snowfall (mm)",
+    y = "Year"
+  )
 
+#Stitching together the two plots
 library(gridExtra)
-grid.arrange(hex, snowfall, ncol = 1)
+grid.arrange(hex, snowfall, nrow = 1)
 
 ```
 
