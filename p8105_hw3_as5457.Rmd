@@ -10,6 +10,7 @@ Setting global settings for the format of the graphs generated for this homework
 
 #Loading the tidyverse package. 
 library(tidyverse)
+library(ggridges)
 
 #Ensuring that the generated graphs are of reasonable height and width.
 knitr::opts_chunk$set(
@@ -303,4 +304,27 @@ ny_weather %>%
   ) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+*Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.*
+
+#tmax vs tmin for full dataset
+
+```{r}
+hex = ny_weather %>% 
+  ggplot(aes(x = tmax, y = tmin)) +
+  geom_hex() +
+  labs(
+    title = "New York Hexagon Plot of Maximum Temperature vs. Minimum Temperature",
+    x = "Maximum Temperature",
+    y = "Minimum Temperature"
+  )
+
+snowfall = ny_weather %>% 
+  filter(snow > 0 & snow < 100) %>% 
+  ggplot(aes(x = snow, y = year)) + 
+  geom_density_ridges(scale = .85)
+
+library(gridExtra)
+grid.arrange(hex, snowfall, ncol = 1)
+
+```
 
