@@ -242,6 +242,21 @@ insta %>%
   ) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 ```
 
+The legend of the plot above can be more easily seen below. (The size of each bubble represents the frequency of products and color represents department)
+```{r}
+insta %>%
+  group_by(aisle, department) %>% 
+  summarize(item_count = n()) %>% 
+  ggplot(aes(x = aisle, y = item_count, color = department)) + 
+  geom_point(aes(size = item_count), alpha = 1) +
+  labs (
+    title = "Number Of Items Ordered In Each Aisle",
+        x = "Aisle Name",
+        y = "Number Of Items Ordered"
+  ) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "right")
+```
+
+
 **Make a table showing the most popular item in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.**
 
 ```{r}
